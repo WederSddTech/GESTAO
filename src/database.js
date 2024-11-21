@@ -2,7 +2,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Caminho para o banco de dados
+// Caminho para o banco de dadoss
 const dbPath = path.resolve(__dirname, '../gestao.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
