@@ -1,0 +1,13 @@
+{
+    "name": "gestao",
+    "version": "1.0.0",
+    "description": "Aplicação web para gestão de débitos",
+    "main": "src/app.js",
+    "scripts": {
+        "start": "node src/app.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "sqlite3": "^5.1.6"
+    }
+}

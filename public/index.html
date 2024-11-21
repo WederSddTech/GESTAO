@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Débitos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f6f6f6;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #f15a24;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #d94e1f;
+        }
+
+        #resultados {
+            margin-top: 20px;
+        }
+
+        .cliente-info {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .debito-item {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Consulta de Débitos</h1>
+    <form id="consulta-form">
+        <label for="cpfCnpj">CPF/CNPJ:</label>
+        <input type="text" id="cpfCnpj" name="cpfCnpj" required>
+
+        <label for="dataInicio">Data Início:</label>
+        <input type="date" id="dataInicio" name="dataInicio">
+
+        <label for="dataFim">Data Fim:</label>
+        <input type="date" id="dataFim" name="dataFim">
+
+        <button type="submit">Consultar</button>
+    </form>
+
+    <div id="resultados"></div>
+
+    <script>
+        document.getElementById('consulta-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const cpfCnpj = document.getElementById('cpfCnpj').value;
+            const dataInicio = document.getElementById('dataInicio').value;
+            const dataFim = document.getElementById('dataFim').value;
+
+            fetch(`/api/debitos?cpfCnpj=${cpfCnpj}&dataInicio=${dataInicio}&dataFim=${dataFim}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultadosDiv = document.getElementById('resultados');
+                    resultadosDiv.innerHTML = '<h2>Resultados:</h2>';
+
+                    if (data && data.length > 0) {
+                        data.forEach(cliente => {
+                            let clienteHtml = `
+                                <div class="cliente-info">
+                                    <h3>Cliente: ${cliente.cliente || 'Nome não disponível'}</h3>
+                                    <p>CPF/CNPJ: ${cliente.cpf_cnpj}</p>
+                                    <h4>Débitos:</h4>
+                                    <ul>
+                            `;
+
+                            cliente.debitos.forEach(debito => {
+                                clienteHtml += `
+                                    <li>
+                                        <div class="debito-item">Número do Título: ${debito.nuntitulo || 'Não disponível'}</div>
+                                        <div class="debito-item">Data de Vencimento: ${debito.datavencimento || 'Não disponível'}</div>
+                                        <div class="debito-item">Valor: R$ ${parseFloat(debito.valor).toFixed(2) || 'Não disponível'}</div>
+                                        <div class="debito-item">Linha Digitável: ${debito.linhadigitavel || 'Não disponível'}</div>
+                                    </li>
+                                `;
+                            });
+
+                            clienteHtml += `
+                                    </ul>
+                                </div>
+                            `;
+
+                            resultadosDiv.innerHTML += clienteHtml;
+                        });
+                    } else {
+                        resultadosDiv.innerHTML += '<p>Nenhum débito encontrado.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na consulta:', error);
+                    document.getElementById('resultados').innerHTML = '<p>Ocorreu um erro na consulta. Tente novamente mais tarde.</p>';
+                });
+        });
+    </script>
+</body>
+
+</html>
