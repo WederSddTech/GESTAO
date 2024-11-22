@@ -89,6 +89,20 @@
         .debito-item {
             margin-bottom: 5px;
         }
+
+        .copy-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+
+        .copy-button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
@@ -123,6 +137,10 @@
                     resultadosDiv.innerHTML = '<h2>Resultados:</h2>';
 
                     if (data && data.length > 0) {
+                        // Calcula a soma total dos débitos
+                        const totalDebitos = data.reduce((acc, cliente) => acc + cliente.totalDebitos, 0);
+                        resultadosDiv.innerHTML += `<h3>Total de Débitos: R$ ${totalDebitos.toFixed(2)}</h3>`;
+
                         data.forEach(cliente => {
                             let clienteHtml = `
                                 <div class="cliente-info">
@@ -138,7 +156,10 @@
                                         <div class="debito-item">Número do Título: ${debito.nuntitulo || 'Não disponível'}</div>
                                         <div class="debito-item">Data de Vencimento: ${debito.datavencimento || 'Não disponível'}</div>
                                         <div class="debito-item">Valor: R$ ${parseFloat(debito.valor).toFixed(2) || 'Não disponível'}</div>
-                                        <div class="debito-item">Linha Digitável: ${debito.linhadigitavel || 'Não disponível'}</div>
+                                        <div class="debito-item">
+                                            Linha Digitável: ${debito.linhadigitavel || 'Não disponível'}
+                                            <button class="copy-button" onclick="copiarLinhaDigitavel('${debito.linhadigitavel}')">Copiar Linha Digitável</button>
+                                        </div>
                                     </li>
                                 `;
                             });
@@ -159,6 +180,14 @@
                     document.getElementById('resultados').innerHTML = '<p>Ocorreu um erro na consulta. Tente novamente mais tarde.</p>';
                 });
         });
+
+        function copiarLinhaDigitavel(linhaDigitavel) {
+            navigator.clipboard.writeText(linhaDigitavel).then(() => {
+                alert('Linha digitável copiada para a área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar linha digitável:', err);
+            });
+        }
     </script>
 </body>
 

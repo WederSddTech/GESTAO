@@ -1,8 +1,7 @@
-// src/database.js
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Caminho para o banco de dadoss
+// Caminho para o banco de dados
 const dbPath = path.resolve(__dirname, '../gestao.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
@@ -14,12 +13,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 // Função para consultar débitos
 function consultarDebitos(cpfCnpj, dataInicio, dataFim, callback) {
-    let query = `SELECT cliente, cpf_cnpj, GROUP_CONCAT(json_object(
+    let query = `SELECT cliente, cpf_cnpj, nuntitulo, GROUP_CONCAT(json_object(
                     'nuntitulo', nuntitulo,
                     'datavencimento', datavencimento,
                     'valor', valor,
                     'linhadigitavel', linhadigitavel
-                 )) as debitos
+                 )) as debitos,
+                 SUM(valor) as totalDebitos
                  FROM aut_titulos_receber 
                  WHERE cpf_cnpj = ?`;
     const params = [cpfCnpj];
@@ -33,7 +33,7 @@ function consultarDebitos(cpfCnpj, dataInicio, dataFim, callback) {
         params.push(dataFim);
     }
 
-    query += ` GROUP BY cliente, cpf_cnpj`;
+    query += ` GROUP BY cliente, cpf_cnpj, nuntitulo`;
 
     db.all(query, params, (err, rows) => {
         if (err) {
@@ -42,7 +42,8 @@ function consultarDebitos(cpfCnpj, dataInicio, dataFim, callback) {
         }
         const resultados = rows.map(row => ({
             ...row,
-            debitos: JSON.parse(`[${row.debitos}]`)
+            debitos: JSON.parse(`[${row.debitos}]`),
+            totalDebitos: row.totalDebitos
         }));
         callback(null, resultados);
     });
